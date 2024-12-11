@@ -1,0 +1,75 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id         Int      @id @default(autoincrement()) 
+  username   String   @unique                     
+  password   String                              
+  firstName  String                             
+  lastName   String                              
+  profileImg String? @default("/img/calm-student-with-downtown-background.jpg")               
+  role       Role                                
+  createdAt  DateTime @default(now())            
+
+  borrowRecords BorrowRecord[]                  
+}
+
+model Equipment {
+  id          Int      @id @default(autoincrement())
+  name        String                 
+  img         String?                               
+  serial      String   @unique                     
+  categoryId  Int                                   
+  status      EquipmentStatus                      
+  createdAt   DateTime @default(now())            
+
+  category   Category @relation(fields: [categoryId], references: [id])
+  borrowRecords BorrowRecord[]                     
+}
+
+model BorrowRecord {
+  id          Int      @id @default(autoincrement())
+  userId      Int                                   
+  equipmentId Int                                   
+  borrowAt    DateTime                              
+  dueAt       DateTime                              
+  returnedAt  DateTime?                             
+  status      BorrowStatus                          
+  createdAt   DateTime @default(now())              
+
+  user       User      @relation(fields: [userId], references: [id])
+  equipment  Equipment @relation(fields: [equipmentId], references: [id])
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String                                  
+
+  equipment Equipment[]                             
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum EquipmentStatus {
+  AVAILABLE
+  BORROWED
+  MAINTENANCE
+  DAMAGED
+}
+
+enum BorrowStatus {
+  PENDING_APPROVAL   
+  PENDING_PICKUP     
+  BORROWED           
+  RETURNED           
+  LATE               
+}
